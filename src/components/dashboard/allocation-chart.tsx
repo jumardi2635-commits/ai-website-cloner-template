@@ -12,6 +12,7 @@ export function AllocationChart() {
             <Pie
               data={allocation}
               dataKey="value"
+              nameKey="name"
               innerRadius={40}
               outerRadius={62}
               paddingAngle={2}

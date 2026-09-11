@@ -8,7 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { equitySeries, formatUsd } from "@/lib/mock-data";
+import { equitySeries, formatIdr } from "@/lib/mock-data";
 
 export function EquityChart() {
   return (
@@ -40,7 +40,7 @@ export function EquityChart() {
               fontSize: 12,
               color: "var(--popover-foreground)",
             }}
-            formatter={(value: number) => [formatUsd(value), "Ekuitas"]}
+            formatter={(value: number) => [formatIdr(value), "Portofolio"]}
           />
           <Area
             type="monotone"

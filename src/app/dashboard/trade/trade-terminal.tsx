@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
@@ -8,116 +8,43 @@ import {
   Tooltip,
   YAxis,
 } from "recharts";
-import { ArrowDownRight, ArrowUpRight, X } from "lucide-react";
+import { CheckCircle2, TrendingUp, X } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
-import { instruments, formatUsd, type Instrument } from "@/lib/mock-data";
+import {
+  products,
+  dailyReturn,
+  totalReturn,
+  formatIdr,
+  type EaProduct,
+} from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
-type OpenTrade = {
+type ActivePurchase = {
   id: string;
-  symbol: string;
-  side: "BUY" | "SELL";
-  lots: number;
-  entry: number;
-  price: number;
+  product: EaProduct;
 };
 
-const SPREAD = 0.0002;
-
-function seedSeries(base: number): number[] {
-  const out: number[] = [];
-  let v = base;
-  for (let i = 0; i < 40; i++) {
-    v += (Math.random() - 0.5) * base * 0.004;
-    out.push(v);
-  }
-  return out;
-}
-
 export function TradeTerminal() {
-  const [active, setActive] = useState<Instrument>(instruments[3]);
-  const [prices, setPrices] = useState<Record<string, number>>(() =>
-    Object.fromEntries(instruments.map((i) => [i.symbol, i.price])),
-  );
-  const [series, setSeries] = useState<number[]>(() => seedSeries(active.price));
-  const [lots, setLots] = useState("0.10");
-  const [trades, setTrades] = useState<OpenTrade[]>([]);
-  const [flash, setFlash] = useState<"up" | "down" | null>(null);
-  const prevPrice = useRef(active.price);
-
-  // Simulated market ticks for every instrument.
-  useEffect(() => {
-    const id = setInterval(() => {
-      setPrices((prev) => {
-        const next: Record<string, number> = {};
-        for (const inst of instruments) {
-          const cur = prev[inst.symbol] ?? inst.price;
-          const drift = (Math.random() - 0.5) * inst.price * 0.0035;
-          next[inst.symbol] = Math.max(cur + drift, inst.price * 0.5);
-        }
-        return next;
-      });
-    }, 1200);
-    return () => clearInterval(id);
-  }, []);
-
-  const livePrice = prices[active.symbol] ?? active.price;
-
-  // Track chart + flash direction whenever the active price changes.
-  useEffect(() => {
-    setSeries((s) => [...s.slice(-39), livePrice]);
-    if (livePrice > prevPrice.current) setFlash("up");
-    else if (livePrice < prevPrice.current) setFlash("down");
-    prevPrice.current = livePrice;
-    const t = setTimeout(() => setFlash(null), 350);
-    return () => clearTimeout(t);
-  }, [livePrice]);
-
-  // Reset chart history when switching instruments.
-  useEffect(() => {
-    setSeries(seedSeries(prices[active.symbol] ?? active.price));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active.symbol]);
-
-  const digits = active.category === "Forex" ? 4 : 2;
-  const ask = livePrice * (1 + SPREAD);
-  const bid = livePrice * (1 - SPREAD);
+  const [active, setActive] = useState<EaProduct>(products[3]);
+  const [purchases, setPurchases] = useState<ActivePurchase[]>([]);
 
   const chartData = useMemo(
-    () => series.map((v, i) => ({ i, v })),
-    [series],
+    () => active.spark.map((v, i) => ({ i, v })),
+    [active],
   );
 
-  function openTrade(side: "BUY" | "SELL") {
-    const size = Number.parseFloat(lots);
-    if (!Number.isFinite(size) || size <= 0) return;
-    setTrades((prev) => [
-      {
-        id: `T-${Date.now()}`,
-        symbol: active.symbol,
-        side,
-        lots: size,
-        entry: side === "BUY" ? ask : bid,
-        price: livePrice,
-      },
-      ...prev,
-    ]);
+  const totalDailyProfit = purchases.reduce(
+    (sum, p) => sum + dailyReturn(p.product),
+    0,
+  );
+
+  function buyPackage() {
+    setPurchases((prev) => [{ id: `P-${Date.now()}`, product: active }, ...prev]);
   }
 
-  function closeTrade(id: string) {
-    setTrades((prev) => prev.filter((t) => t.id !== id));
+  function cancelPackage(id: string) {
+    setPurchases((prev) => prev.filter((p) => p.id !== id));
   }
-
-  function pnlFor(t: OpenTrade): number {
-    const cur = prices[t.symbol] ?? t.price;
-    const contract = t.symbol.includes("/") || t.symbol === "WTI" ? 100000 : 1;
-    const raw = (cur - t.entry) * (t.side === "BUY" ? 1 : -1);
-    // Scale to a believable demo P&L figure.
-    const scale = contract === 1 ? t.lots : (t.lots * contract) / 1000;
-    return raw * scale;
-  }
-
-  const totalPnl = trades.reduce((sum, t) => sum + pnlFor(t), 0);
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
@@ -127,28 +54,21 @@ export function TradeTerminal() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold tracking-tight">
-                  {active.symbol}
-                </h2>
+                <h2 className="text-lg font-bold tracking-tight">{active.name}</h2>
                 <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
-                  {active.category}
+                  {active.asset}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground">{active.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {active.tier} · {active.durationDays} hari
+              </p>
             </div>
             <div className="text-right">
-              <div
-                className={cn(
-                  "text-2xl font-bold tabular-nums transition-colors",
-                  flash === "up" && "text-emerald-500",
-                  flash === "down" && "text-destructive",
-                )}
-              >
-                {livePrice.toFixed(digits)}
+              <div className="text-2xl font-bold tabular-nums text-emerald-500">
+                +{active.returnPct}%
               </div>
               <div className="flex items-center justify-end gap-3 text-[11px] text-muted-foreground">
-                <span>Bid {bid.toFixed(digits)}</span>
-                <span>Ask {ask.toFixed(digits)}</span>
+                <span>Modal {formatIdr(active.price)}</span>
               </div>
             </div>
           </div>
@@ -172,7 +92,7 @@ export function TradeTerminal() {
                     color: "var(--popover-foreground)",
                   }}
                   labelFormatter={() => ""}
-                  formatter={(v: number) => [v.toFixed(digits), "Harga"]}
+                  formatter={(v: number) => [v.toFixed(2), "Indeks Performa"]}
                 />
                 <Area
                   type="monotone"
@@ -187,84 +107,60 @@ export function TradeTerminal() {
           </div>
         </Panel>
 
-        {/* Open positions */}
+        {/* Active purchases */}
         <Panel>
           <PanelHeader
-            title="Posisi Terbuka"
-            hint="Demo — P&L diperbarui mengikuti harga simulasi"
+            title="Paket Dibeli"
+            hint="Demo — simulasi pembelian paket EA"
             action={
-              <span
-                className={cn(
-                  "text-sm font-semibold tabular-nums",
-                  totalPnl >= 0 ? "text-emerald-500" : "text-destructive",
-                )}
-              >
-                {totalPnl >= 0 ? "+" : ""}
-                {formatUsd(totalPnl)}
+              <span className="text-sm font-semibold tabular-nums text-emerald-500">
+                +{formatIdr(totalDailyProfit)}/hari
               </span>
             }
           />
-          {trades.length === 0 ? (
+          {purchases.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Belum ada posisi. Buka order BUY atau SELL untuk memulai.
+              Belum ada paket dibeli. Pilih paket EA dan klik &quot;Beli Paket&quot; untuk memulai.
             </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="pb-2 font-medium">Simbol</th>
-                    <th className="pb-2 font-medium">Sisi</th>
-                    <th className="pb-2 text-right font-medium">Lot</th>
-                    <th className="pb-2 text-right font-medium">Entry</th>
-                    <th className="pb-2 text-right font-medium">P&L</th>
+                    <th className="pb-2 font-medium">Paket</th>
+                    <th className="pb-2 font-medium">Kelas Aset</th>
+                    <th className="pb-2 text-right font-medium">Modal</th>
+                    <th className="pb-2 text-right font-medium">Profit/Hari</th>
                     <th className="pb-2 text-right font-medium sr-only">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {trades.map((t) => {
-                    const pnl = pnlFor(t);
-                    return (
-                      <tr key={t.id} className="border-b border-border/60 last:border-0">
-                        <td className="py-2.5 font-medium">{t.symbol}</td>
-                        <td className="py-2.5">
-                          <span
-                            className={cn(
-                              "rounded px-1.5 py-0.5 text-[11px] font-semibold",
-                              t.side === "BUY"
-                                ? "bg-emerald-500/15 text-emerald-500"
-                                : "bg-destructive/15 text-destructive",
-                            )}
-                          >
-                            {t.side}
-                          </span>
-                        </td>
-                        <td className="py-2.5 text-right tabular-nums">{t.lots.toFixed(2)}</td>
-                        <td className="py-2.5 text-right tabular-nums">
-                          {t.entry.toFixed(t.symbol.includes("/") ? 4 : 2)}
-                        </td>
-                        <td
-                          className={cn(
-                            "py-2.5 text-right font-semibold tabular-nums",
-                            pnl >= 0 ? "text-emerald-500" : "text-destructive",
-                          )}
+                  {purchases.map((p) => (
+                    <tr key={p.id} className="border-b border-border/60 last:border-0">
+                      <td className="py-2.5 font-medium">{p.product.name}</td>
+                      <td className="py-2.5">
+                        <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
+                          {p.product.asset}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-right tabular-nums">
+                        {formatIdr(p.product.price)}
+                      </td>
+                      <td className="py-2.5 text-right font-semibold tabular-nums text-emerald-500">
+                        +{formatIdr(dailyReturn(p.product))}
+                      </td>
+                      <td className="py-2.5 text-right">
+                        <button
+                          type="button"
+                          onClick={() => cancelPackage(p.id)}
+                          aria-label={`Batalkan ${p.product.name}`}
+                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
                         >
-                          {pnl >= 0 ? "+" : ""}
-                          {formatUsd(pnl)}
-                        </td>
-                        <td className="py-2.5 text-right">
-                          <button
-                            type="button"
-                            onClick={() => closeTrade(t.id)}
-                            aria-label={`Tutup posisi ${t.symbol}`}
-                            className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <X className="size-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          <X className="size-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -272,122 +168,87 @@ export function TradeTerminal() {
         </Panel>
       </div>
 
-      {/* Order ticket + watchlist */}
+      {/* Order ticket + package list */}
       <div className="space-y-5">
         <Panel>
-          <PanelHeader title="Order Ticket" />
+          <PanelHeader title="Detail Paket" />
           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-            Instrumen
+            Paket EA
           </label>
           <select
-            value={active.symbol}
+            value={active.id}
             onChange={(e) => {
-              const found = instruments.find((i) => i.symbol === e.target.value);
+              const found = products.find((p) => p.id === e.target.value);
               if (found) setActive(found);
             }}
             className="mb-4 w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
           >
-            {instruments.map((i) => (
-              <option key={i.symbol} value={i.symbol}>
-                {i.symbol} — {i.name}
+            {products.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.asset}
               </option>
             ))}
           </select>
 
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-            Ukuran (lot)
-          </label>
-          <div className="mb-3 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                setLots((l) => Math.max(0.01, +(Number.parseFloat(l || "0") - 0.1).toFixed(2)).toFixed(2))
-              }
-              className="size-10 shrink-0 rounded-lg border border-input text-lg font-medium hover:bg-secondary"
-              aria-label="Kurangi lot"
-            >
-              −
-            </button>
-            <input
-              value={lots}
-              onChange={(e) => setLots(e.target.value)}
-              inputMode="decimal"
-              className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-center text-sm tabular-nums outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
-            />
-            <button
-              type="button"
-              onClick={() =>
-                setLots((l) => (Number.parseFloat(l || "0") + 0.1).toFixed(2))
-              }
-              className="size-10 shrink-0 rounded-lg border border-input text-lg font-medium hover:bg-secondary"
-              aria-label="Tambah lot"
-            >
-              +
-            </button>
-          </div>
+          <dl className="mb-4 space-y-2 text-sm">
+            <div className="flex items-center justify-between">
+              <dt className="text-muted-foreground">Modal Investasi</dt>
+              <dd className="font-semibold">{formatIdr(active.price)}</dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-muted-foreground">Return Harian</dt>
+              <dd className="font-semibold text-emerald-500">
+                +{formatIdr(dailyReturn(active))}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-muted-foreground">Total Estimasi</dt>
+              <dd className="font-semibold text-emerald-500">
+                +{formatIdr(totalReturn(active))}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-muted-foreground">Durasi</dt>
+              <dd className="font-semibold">{active.durationDays} hari</dd>
+            </div>
+          </dl>
 
-          <div className="mb-4 flex gap-2">
-            {["0.10", "0.50", "1.00", "2.00"].map((q) => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => setLots(q)}
-                className="flex-1 rounded-md border border-input py-1.5 text-xs tabular-nums text-muted-foreground hover:bg-secondary hover:text-foreground"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => openTrade("SELL")}
-              className="flex flex-col items-center gap-0.5 rounded-lg bg-destructive px-3 py-3 text-destructive-foreground transition-opacity hover:opacity-90"
-            >
-              <span className="flex items-center gap-1 text-xs font-medium">
-                <ArrowDownRight className="size-3.5" /> SELL
-              </span>
-              <span className="text-sm font-bold tabular-nums">{bid.toFixed(digits)}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => openTrade("BUY")}
-              className="flex flex-col items-center gap-0.5 rounded-lg bg-emerald-600 px-3 py-3 text-white transition-opacity hover:opacity-90"
-            >
-              <span className="flex items-center gap-1 text-xs font-medium">
-                <ArrowUpRight className="size-3.5" /> BUY
-              </span>
-              <span className="text-sm font-bold tabular-nums">{ask.toFixed(digits)}</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={buyPackage}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <CheckCircle2 className="size-4" />
+            Beli Paket
+          </button>
           <p className="mt-3 text-center text-[11px] text-muted-foreground">
             Akun demo — tidak ada dana nyata yang digunakan.
           </p>
         </Panel>
 
         <Panel>
-          <PanelHeader title="Watchlist" />
+          <PanelHeader title="Paket Populer" />
           <ul className="space-y-1">
-            {instruments.slice(0, 6).map((i) => {
-              const p = prices[i.symbol] ?? i.price;
-              const d = i.category === "Forex" ? 4 : 2;
-              return (
-                <li key={i.symbol}>
+            {products
+              .filter((p) => p.popular)
+              .map((p) => (
+                <li key={p.id}>
                   <button
                     type="button"
-                    onClick={() => setActive(i)}
+                    onClick={() => setActive(p)}
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-secondary",
-                      active.symbol === i.symbol && "bg-secondary",
+                      active.id === p.id && "bg-secondary",
                     )}
                   >
-                    <span className="font-medium">{i.symbol}</span>
-                    <span className="tabular-nums text-muted-foreground">{p.toFixed(d)}</span>
+                    <span className="font-medium">{p.name}</span>
+                    <span className="flex items-center gap-0.5 tabular-nums text-emerald-500">
+                      <TrendingUp className="size-3.5" />
+                      {p.returnPct}%
+                    </span>
                   </button>
                 </li>
-              );
-            })}
+              ))}
           </ul>
         </Panel>
       </div>
