@@ -1,17 +1,35 @@
-import { ArrowDownToLine, ArrowUpFromLine, Gift } from "lucide-react";
+import { Gift } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
-import { account, transactions, formatIdr } from "@/lib/mock-data";
+import { WalletActions } from "@/components/dashboard/wallet-actions";
+import { getWalletData } from "@/app/actions/wallet";
+import { formatIdr } from "@/lib/mock-data";
+import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Dompet | Genius fx" };
 
-const statusStyle: Record<string, string> = {
-  Selesai: "bg-emerald-500/15 text-emerald-500",
-  Diproses: "bg-accent/20 text-accent-foreground",
-  Ditolak: "bg-destructive/15 text-destructive",
+const typeLabel: Record<string, string> = {
+  deposit: "Deposit",
+  withdrawal: "Penarikan",
+  bonus: "Bonus",
+  profit: "Investasi",
 };
 
-export default function WalletPage() {
+const statusLabel: Record<string, string> = {
+  pending: "Diproses",
+  approved: "Selesai",
+  rejected: "Ditolak",
+};
+
+const statusStyle: Record<string, string> = {
+  approved: "bg-emerald-500/15 text-emerald-500",
+  pending: "bg-accent/20 text-accent-foreground",
+  rejected: "bg-destructive/15 text-destructive",
+};
+
+export default async function WalletPage() {
+  const { mainBalance, transactions } = await getWalletData();
+
   return (
     <div className="space-y-6">
       <div>
@@ -25,26 +43,9 @@ export default function WalletPage() {
         <Panel className="lg:col-span-1 flex flex-col justify-between bg-primary text-primary-foreground">
           <div>
             <p className="text-sm opacity-80">Saldo Tersedia</p>
-            <p className="mt-1 text-3xl font-bold tracking-tight">
-              {formatIdr(account.mainBalance)}
-            </p>
+            <p className="mt-1 text-3xl font-bold tracking-tight">{formatIdr(mainBalance)}</p>
           </div>
-          <div className="mt-6 flex gap-2">
-            <button
-              type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-semibold backdrop-blur hover:bg-primary-foreground/25"
-            >
-              <ArrowDownToLine className="size-4" />
-              Deposit
-            </button>
-            <button
-              type="button"
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-semibold backdrop-blur hover:bg-primary-foreground/25"
-            >
-              <ArrowUpFromLine className="size-4" />
-              Tarik
-            </button>
-          </div>
+          <WalletActions mainBalance={mainBalance} />
         </Panel>
 
         <Panel className="lg:col-span-2">
@@ -52,13 +53,12 @@ export default function WalletPage() {
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {["Transfer Bank", "Kartu Kredit", "E-Wallet", "USDT (TRC20)", "USDT (ERC20)", "QRIS"].map(
               (m) => (
-                <button
+                <div
                   key={m}
-                  type="button"
-                  className="rounded-lg border border-border bg-secondary/50 px-3 py-4 text-sm font-medium hover:border-primary hover:bg-secondary"
+                  className="rounded-lg border border-border bg-secondary/50 px-3 py-4 text-center text-sm font-medium"
                 >
                   {m}
-                </button>
+                </div>
               ),
             )}
           </div>
@@ -85,35 +85,49 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
-                <tr
-                  key={tx.id}
-                  className="border-b border-border/60 last:border-0 hover:bg-secondary/50"
-                >
-                  <td className="px-5 py-3 font-mono text-xs text-muted-foreground">{tx.id}</td>
-                  <td className="px-5 py-3 font-semibold">{tx.type}</td>
-                  <td
-                    className={cn(
-                      "px-5 py-3 text-right font-semibold",
-                      tx.type === "Penarikan" ? "text-destructive" : "text-emerald-500",
-                    )}
-                  >
-                    {tx.type === "Penarikan" ? "-" : "+"}
-                    {formatIdr(tx.amount)}
+              {transactions.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-5 py-8 text-center text-muted-foreground">
+                    Belum ada transaksi.
                   </td>
-                  <td className="px-5 py-3">
-                    <span
+                </tr>
+              ) : (
+                transactions.map((tx) => (
+                  <tr
+                    key={tx.id}
+                    className="border-b border-border/60 last:border-0 hover:bg-secondary/50"
+                  >
+                    <td className="px-5 py-3 font-mono text-xs text-muted-foreground">
+                      TX-{String(tx.id).padStart(4, "0")}
+                    </td>
+                    <td className="px-5 py-3 font-semibold">{typeLabel[tx.type] ?? tx.type}</td>
+                    <td
                       className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-medium",
-                        statusStyle[tx.status],
+                        "px-5 py-3 text-right font-semibold",
+                        tx.type === "withdrawal" || tx.type === "profit"
+                          ? "text-destructive"
+                          : "text-emerald-500",
                       )}
                     >
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right text-muted-foreground">{tx.date}</td>
-                </tr>
-              ))}
+                      {tx.type === "withdrawal" || tx.type === "profit" ? "-" : "+"}
+                      {formatIdr(tx.amount)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-xs font-medium",
+                          statusStyle[tx.status],
+                        )}
+                      >
+                        {statusLabel[tx.status] ?? tx.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right text-muted-foreground">
+                      {formatDateTime(tx.createdAt)}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

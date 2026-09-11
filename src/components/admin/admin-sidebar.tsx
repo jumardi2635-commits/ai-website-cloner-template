@@ -5,34 +5,26 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
-  CandlestickChart,
-  TrendingUp,
-  Wallet,
-  UserRound,
+  Users,
+  ArrowLeftRight,
+  Package,
   MessagesSquare,
-  LifeBuoy,
   LogOut,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 
 const links = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/trade", label: "Trading", icon: TrendingUp },
-  { href: "/dashboard/markets", label: "Pasar", icon: CandlestickChart },
-  { href: "/dashboard/wallet", label: "Dompet", icon: Wallet },
-  { href: "/dashboard/forum", label: "Forum", icon: MessagesSquare },
-  { href: "/dashboard/profile", label: "Profil", icon: UserRound },
+  { href: "/admin", label: "Overview", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Pengguna", icon: Users },
+  { href: "/admin/transactions", label: "Deposit & Penarikan", icon: ArrowLeftRight },
+  { href: "/admin/packages", label: "Paket EA", icon: Package },
+  { href: "/admin/forum", label: "Moderasi Forum", icon: MessagesSquare },
 ];
 
-export function SidebarNav({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function AdminSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -60,7 +52,7 @@ export function SidebarNav({
         )}
       >
         <div className="flex items-center justify-between px-5 py-5">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5">
             <Image
               src="/images/geniusfx-logo.png"
               alt="Genius fx"
@@ -68,10 +60,16 @@ export function SidebarNav({
               height={36}
               className="rounded-lg"
             />
-            <span className="text-base font-bold tracking-tight">
-              Genius<span className="text-accent">fx</span>
-            </span>
-          </Link>
+            <div className="leading-tight">
+              <span className="text-base font-bold tracking-tight">
+                Genius<span className="text-accent">fx</span>
+              </span>
+              <p className="flex items-center gap-1 text-[10px] font-semibold text-primary">
+                <ShieldCheck className="size-3" />
+                Admin Panel
+              </p>
+            </div>
+          </div>
           <button
             type="button"
             onClick={onClose}
@@ -84,10 +82,7 @@ export function SidebarNav({
 
         <nav className="flex-1 space-y-1 px-3">
           {links.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/dashboard"
-                ? pathname === href
-                : pathname.startsWith(href);
+            const active = href === "/admin" ? pathname === href : pathname.startsWith(href);
             return (
               <Link
                 key={href}
@@ -108,13 +103,13 @@ export function SidebarNav({
         </nav>
 
         <div className="space-y-1 border-t border-border px-3 py-4">
-          <button
-            type="button"
+          <Link
+            href="/dashboard"
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
-            <LifeBuoy className="size-4" />
-            Bantuan
-          </button>
+            <LayoutDashboard className="size-4" />
+            Lihat sebagai User
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}

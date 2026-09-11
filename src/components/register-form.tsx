@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Gift, Lock, Phone } from "lucide-react";
 import { SlideVerify } from "@/components/slide-verify";
+import { authClient } from "@/lib/auth-client";
+import { phoneToEmail } from "@/lib/phone";
+import { completeRegistration } from "@/app/actions/auth";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -15,12 +18,21 @@ export function RegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!phone || !password) {
+      setMessage("Nomor HP dan kata sandi wajib diisi.");
+      return;
+    }
     if (password !== confirmPassword) {
       setMessage("Konfirmasi kata sandi tidak cocok.");
+      return;
+    }
+    if (password.length < 8) {
+      setMessage("Kata sandi minimal 8 karakter.");
       return;
     }
     if (!agreed) {
@@ -31,8 +43,35 @@ export function RegisterForm() {
       setMessage("Selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
-    // Demo-only clone: credentials are never sent anywhere; go straight to the demo dashboard.
+
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await authClient.signUp.email({
+      email: phoneToEmail(phone),
+      password,
+      name: phone,
+    });
+
+    if (error) {
+      setLoading(false);
+      setMessage(
+        error.message?.includes("already exists")
+          ? "Nomor HP ini sudah terdaftar."
+          : "Gagal mendaftar. Coba lagi.",
+      );
+      return;
+    }
+
+    try {
+      await completeRegistration(phone, inviteCode);
+    } catch {
+      // Profile creation failure shouldn't block access; it can be retried later.
+    }
+
+    setLoading(false);
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -150,9 +189,10 @@ export function RegisterForm() {
 
       <button
         type="submit"
-        className="mt-1 h-13 w-full rounded-xl bg-gradient-to-b from-primary to-primary-strong py-3.5 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 transition-transform active:scale-[0.99]"
+        disabled={loading}
+        className="mt-1 h-13 w-full rounded-xl bg-gradient-to-b from-primary to-primary-strong py-3.5 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 transition-transform active:scale-[0.99] disabled:opacity-60"
       >
-        Daftar
+        {loading ? "Memproses..." : "Daftar"}
       </button>
     </form>
   );
