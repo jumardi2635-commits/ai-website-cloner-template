@@ -1,10 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginForm } from "@/components/login-form";
 import { RegulatorBadges } from "@/components/regulator-badges";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (session?.user) {
+    redirect(session.user.role === "admin" ? "/admin" : "/dashboard");
+  }
+
   return (
     <main className="hex-backdrop flex min-h-screen flex-col items-center px-4 py-6">
       <div className="mb-6 flex w-full max-w-md justify-end">

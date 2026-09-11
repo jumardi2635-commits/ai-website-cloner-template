@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Area,
   AreaChart,
@@ -8,48 +9,121 @@ import {
   Tooltip,
   YAxis,
 } from "recharts";
-import { CheckCircle2, TrendingUp, X } from "lucide-react";
+import { CheckCircle2, Radio, TrendingDown, TrendingUp } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
-import {
-  products,
-  dailyReturn,
-  totalReturn,
-  formatIdr,
-  type EaProduct,
-} from "@/lib/mock-data";
+import { formatIdr } from "@/lib/mock-data";
+import { buyPackage } from "@/app/actions/packages";
 import { cn } from "@/lib/utils";
 
-type ActivePurchase = {
-  id: string;
-  product: EaProduct;
+type EaPackageRow = {
+  id: number;
+  name: string;
+  asset: string;
+  tier: string;
+  price: number;
+  returnPct: string;
+  durationDays: number;
+  popular: boolean;
 };
 
-export function TradeTerminal() {
-  const [active, setActive] = useState<EaProduct>(products[3]);
-  const [purchases, setPurchases] = useState<ActivePurchase[]>([]);
+type InvestmentRow = {
+  id: number;
+  modal: number;
+  status: string;
+  createdAt: Date;
+  package: EaPackageRow;
+};
 
-  const chartData = useMemo(
-    () => active.spark.map((v, i) => ({ i, v })),
-    [active],
-  );
+const TICK_MS = 1500;
+const HISTORY_LENGTH = 60;
 
-  const totalDailyProfit = purchases.reduce(
-    (sum, p) => sum + dailyReturn(p.product),
-    0,
-  );
+function dailyReturn(pkg: EaPackageRow) {
+  const total = pkg.price * (Number(pkg.returnPct) / 100);
+  return Math.round(total / pkg.durationDays);
+}
 
-  function buyPackage() {
-    setPurchases((prev) => [{ id: `P-${Date.now()}`, product: active }, ...prev]);
+function seedSeries(base: number) {
+  const series: number[] = [base];
+  for (let i = 1; i < HISTORY_LENGTH; i++) {
+    const prev = series[i - 1];
+    const drift = (Math.random() - 0.48) * (base * 0.004);
+    series.push(Math.max(base * 0.9, prev + drift));
+  }
+  return series;
+}
+
+export function TradeTerminal({
+  packages,
+  investments,
+  mainBalance,
+}: {
+  packages: EaPackageRow[];
+  investments: InvestmentRow[];
+  mainBalance: number;
+}) {
+  const router = useRouter();
+  const [active, setActive] = useState<EaPackageRow>(packages[0]);
+  const [series, setSeries] = useState<number[]>(() => seedSeries(100));
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setSeries(seedSeries(100));
+    const t = setTimeout(() => setConnected(true), 400);
+    return () => clearTimeout(t);
+  }, [active?.id]);
+
+  useEffect(() => {
+    tickRef.current = setInterval(() => {
+      setSeries((prev) => {
+        const last = prev[prev.length - 1] ?? 100;
+        const drift = (Math.random() - 0.47) * 1.2;
+        const next = Math.max(70, last + drift);
+        return [...prev.slice(1), next];
+      });
+    }, TICK_MS);
+    return () => {
+      if (tickRef.current) clearInterval(tickRef.current);
+    };
+  }, []);
+
+  const chartData = useMemo(() => series.map((v, i) => ({ i, v })), [series]);
+  const last = series[series.length - 1] ?? 0;
+  const prev = series[series.length - 2] ?? last;
+  const tickUp = last >= prev;
+  const changePct = prev ? (((last - prev) / prev) * 100).toFixed(2) : "0.00";
+
+  const totalDailyProfit = investments.reduce((sum, p) => sum + dailyReturn(p.package), 0);
+
+  function handleBuy() {
+    if (!active) return;
+    setError(null);
+    startTransition(async () => {
+      try {
+        await buyPackage(active.id);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Gagal membeli paket");
+      }
+    });
   }
 
-  function cancelPackage(id: string) {
-    setPurchases((prev) => prev.filter((p) => p.id !== id));
+  if (!active) {
+    return (
+      <Panel>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          Belum ada paket EA yang tersedia saat ini.
+        </p>
+      </Panel>
+    );
   }
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1fr_320px]">
       <div className="space-y-5">
-        {/* Chart panel */}
+        {/* Live chart panel */}
         <Panel>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -58,17 +132,38 @@ export function TradeTerminal() {
                 <span className="rounded-md bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
                   {active.asset}
                 </span>
+                <span
+                  className={cn(
+                    "flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                    connected
+                      ? "bg-emerald-500/15 text-emerald-500"
+                      : "bg-secondary text-muted-foreground",
+                  )}
+                >
+                  <Radio className={cn("size-3", connected && "animate-pulse")} />
+                  {connected ? "LIVE" : "Menghubungkan..."}
+                </span>
               </div>
               <p className="text-xs text-muted-foreground">
                 {active.tier} · {active.durationDays} hari
               </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold tabular-nums text-emerald-500">
-                +{active.returnPct}%
+              <div
+                className={cn(
+                  "flex items-center justify-end gap-1 text-2xl font-bold tabular-nums",
+                  tickUp ? "text-emerald-500" : "text-destructive",
+                )}
+              >
+                {tickUp ? <TrendingUp className="size-5" /> : <TrendingDown className="size-5" />}
+                {last.toFixed(2)}
               </div>
               <div className="flex items-center justify-end gap-3 text-[11px] text-muted-foreground">
-                <span>Modal {formatIdr(active.price)}</span>
+                <span className={tickUp ? "text-emerald-500" : "text-destructive"}>
+                  {tickUp ? "+" : ""}
+                  {changePct}%
+                </span>
+                <span>Return {active.returnPct}%</span>
               </div>
             </div>
           </div>
@@ -92,7 +187,7 @@ export function TradeTerminal() {
                     color: "var(--popover-foreground)",
                   }}
                   labelFormatter={() => ""}
-                  formatter={(v: number) => [v.toFixed(2), "Indeks Performa"]}
+                  formatter={(v: number) => [v.toFixed(2), "Indeks Live"]}
                 />
                 <Area
                   type="monotone"
@@ -107,20 +202,20 @@ export function TradeTerminal() {
           </div>
         </Panel>
 
-        {/* Active purchases */}
+        {/* Active investments (real) */}
         <Panel>
           <PanelHeader
-            title="Paket Dibeli"
-            hint="Demo — simulasi pembelian paket EA"
+            title="Paket EA Berjalan"
+            hint={`${investments.length} paket aktif · dana nyata`}
             action={
               <span className="text-sm font-semibold tabular-nums text-emerald-500">
                 +{formatIdr(totalDailyProfit)}/hari
               </span>
             }
           />
-          {purchases.length === 0 ? (
+          {investments.length === 0 ? (
             <p className="py-8 text-center text-sm text-muted-foreground">
-              Belum ada paket dibeli. Pilih paket EA dan klik &quot;Beli Paket&quot; untuk memulai.
+              Belum ada paket dibeli. Pilih paket EA di sisi kanan dan klik &quot;Beli Paket&quot; untuk memulai.
             </p>
           ) : (
             <div className="overflow-x-auto">
@@ -131,33 +226,20 @@ export function TradeTerminal() {
                     <th className="pb-2 font-medium">Kelas Aset</th>
                     <th className="pb-2 text-right font-medium">Modal</th>
                     <th className="pb-2 text-right font-medium">Profit/Hari</th>
-                    <th className="pb-2 text-right font-medium sr-only">Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {purchases.map((p) => (
+                  {investments.map((p) => (
                     <tr key={p.id} className="border-b border-border/60 last:border-0">
-                      <td className="py-2.5 font-medium">{p.product.name}</td>
+                      <td className="py-2.5 font-medium">{p.package.name}</td>
                       <td className="py-2.5">
                         <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[11px] font-semibold text-primary">
-                          {p.product.asset}
+                          {p.package.asset}
                         </span>
                       </td>
-                      <td className="py-2.5 text-right tabular-nums">
-                        {formatIdr(p.product.price)}
-                      </td>
+                      <td className="py-2.5 text-right tabular-nums">{formatIdr(p.modal)}</td>
                       <td className="py-2.5 text-right font-semibold tabular-nums text-emerald-500">
-                        +{formatIdr(dailyReturn(p.product))}
-                      </td>
-                      <td className="py-2.5 text-right">
-                        <button
-                          type="button"
-                          onClick={() => cancelPackage(p.id)}
-                          aria-label={`Batalkan ${p.product.name}`}
-                          className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <X className="size-4" />
-                        </button>
+                        +{formatIdr(dailyReturn(p.package))}
                       </td>
                     </tr>
                   ))}
@@ -172,18 +254,16 @@ export function TradeTerminal() {
       <div className="space-y-5">
         <Panel>
           <PanelHeader title="Detail Paket" />
-          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-            Paket EA
-          </label>
+          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Paket EA</label>
           <select
             value={active.id}
             onChange={(e) => {
-              const found = products.find((p) => p.id === e.target.value);
+              const found = packages.find((p) => p.id === Number(e.target.value));
               if (found) setActive(found);
             }}
             className="mb-4 w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
           >
-            {products.map((p) => (
+            {packages.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name} — {p.asset}
               </option>
@@ -197,39 +277,40 @@ export function TradeTerminal() {
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">Return Harian</dt>
-              <dd className="font-semibold text-emerald-500">
-                +{formatIdr(dailyReturn(active))}
-              </dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-muted-foreground">Total Estimasi</dt>
-              <dd className="font-semibold text-emerald-500">
-                +{formatIdr(totalReturn(active))}
-              </dd>
+              <dd className="font-semibold text-emerald-500">+{formatIdr(dailyReturn(active))}</dd>
             </div>
             <div className="flex items-center justify-between">
               <dt className="text-muted-foreground">Durasi</dt>
               <dd className="font-semibold">{active.durationDays} hari</dd>
             </div>
+            <div className="flex items-center justify-between">
+              <dt className="text-muted-foreground">Saldo Anda</dt>
+              <dd className="font-semibold">{formatIdr(mainBalance)}</dd>
+            </div>
           </dl>
+
+          {error ? (
+            <p className="mb-3 rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{error}</p>
+          ) : null}
 
           <button
             type="button"
-            onClick={buyPackage}
-            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            onClick={handleBuy}
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-3 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             <CheckCircle2 className="size-4" />
-            Beli Paket
+            {isPending ? "Memproses..." : "Beli Paket"}
           </button>
           <p className="mt-3 text-center text-[11px] text-muted-foreground">
-            Akun demo — tidak ada dana nyata yang digunakan.
+            Saldo akan langsung terpotong dari Saldo Utama Anda.
           </p>
         </Panel>
 
         <Panel>
           <PanelHeader title="Paket Populer" />
           <ul className="space-y-1">
-            {products
+            {packages
               .filter((p) => p.popular)
               .map((p) => (
                 <li key={p.id}>

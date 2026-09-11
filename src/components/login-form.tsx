@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Phone } from "lucide-react";
 import { SlideVerify } from "@/components/slide-verify";
+import { authClient } from "@/lib/auth-client";
+import { phoneToEmail } from "@/lib/phone";
 
 export function LoginForm() {
   const router = useRouter();
@@ -11,16 +13,37 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!phone || !password) {
+      setMessage("Nomor HP dan kata sandi wajib diisi.");
+      return;
+    }
     if (!verified) {
       setMessage("Selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
-    // Demo-only clone: credentials are never sent anywhere; go straight to the demo dashboard.
+
+    setLoading(true);
+    setMessage(null);
+
+    const { error } = await authClient.signIn.email({
+      email: phoneToEmail(phone),
+      password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      setMessage("Nomor HP atau kata sandi salah.");
+      return;
+    }
+
     router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -80,9 +103,10 @@ export function LoginForm() {
 
       <button
         type="submit"
-        className="mt-1 h-13 w-full rounded-xl bg-gradient-to-b from-primary to-primary-strong py-3.5 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 transition-transform active:scale-[0.99]"
+        disabled={loading}
+        className="mt-1 h-13 w-full rounded-xl bg-gradient-to-b from-primary to-primary-strong py-3.5 text-sm font-semibold tracking-wide text-primary-foreground shadow-lg shadow-primary/25 transition-transform active:scale-[0.99] disabled:opacity-60"
       >
-        Masuk
+        {loading ? "Memproses..." : "Masuk"}
       </button>
     </form>
   );

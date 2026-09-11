@@ -9,24 +9,28 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
-import { account } from "@/lib/mock-data";
+import { ProfileEditButton } from "@/components/dashboard/profile-edit";
+import { getProfile } from "@/app/actions/profile";
+import { formatDateTime } from "@/lib/format";
 
 export const metadata = { title: "Profil | Genius fx" };
 
-const details = [
-  { label: "Nomor Telepon", value: account.phone, icon: Phone },
-  { label: "Tanggal Bergabung", value: account.joined, icon: Calendar },
-  { label: "ID Akun", value: account.id, icon: Shield },
-  { label: "Kode Referral", value: account.referralCode, icon: Gift },
-];
-
 const security = [
-  { label: "Ubah Kata Sandi", hint: "Terakhir diubah 3 bulan lalu", icon: KeyRound },
-  { label: "Autentikasi Dua Faktor", hint: "Aktif via aplikasi", icon: Smartphone },
-  { label: "Verifikasi Identitas (KYC)", hint: "Terverifikasi", icon: BadgeCheck },
+  { label: "Ubah Kata Sandi", hint: "Kelola kata sandi akun Anda", icon: KeyRound },
+  { label: "Autentikasi Dua Faktor", hint: "Belum diaktifkan", icon: Smartphone },
+  { label: "Verifikasi Identitas (KYC)", hint: "Belum diverifikasi", icon: BadgeCheck },
 ];
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const profile = await getProfile();
+
+  const details = [
+    { label: "Nomor Telepon", value: profile.phone || "-", icon: Phone },
+    { label: "Tanggal Bergabung", value: formatDateTime(new Date(profile.joined)), icon: Calendar },
+    { label: "Kode Referral", value: profile.referralCode || "-", icon: Gift },
+    { label: "Peran", value: "Member", icon: Shield },
+  ];
+
   return (
     <div className="space-y-6">
       <div>
@@ -39,29 +43,18 @@ export default function ProfilePage() {
       <Panel>
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-center">
           <span className="grid size-20 place-items-center rounded-2xl bg-primary text-3xl font-bold text-primary-foreground">
-            {account.name.charAt(0)}
+            {profile.name.charAt(0).toUpperCase()}
           </span>
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center gap-2 sm:justify-start">
-              <h2 className="text-lg font-bold">{account.name}</h2>
-              {account.verified ? (
-                <span className="flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-500">
-                  <BadgeCheck className="size-3.5" />
-                  Terverifikasi
-                </span>
-              ) : null}
+              <h2 className="text-lg font-bold">{profile.name}</h2>
             </div>
-            <p className="text-sm text-muted-foreground">{account.phone}</p>
+            <p className="text-sm text-muted-foreground">{profile.phone || "-"}</p>
             <span className="mt-2 inline-block rounded-full bg-accent/20 px-3 py-0.5 text-xs font-semibold text-accent-foreground">
-              {account.activePackages} Paket Aktif
+              {profile.activePackagesCount} Paket Aktif
             </span>
           </div>
-          <button
-            type="button"
-            className="mt-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary sm:ml-auto sm:mt-0"
-          >
-            Edit Profil
-          </button>
+          <ProfileEditButton currentName={profile.name} />
         </div>
       </Panel>
 

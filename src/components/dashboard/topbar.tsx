@@ -2,9 +2,14 @@
 
 import { Menu, Bell, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { account } from "@/lib/mock-data";
 
-export function Topbar({ onMenu }: { onMenu: () => void }) {
+export function Topbar({
+  onMenu,
+  user,
+}: {
+  onMenu: () => void;
+  user: { name: string; phone: string };
+}) {
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/80 px-4 py-3 backdrop-blur md:px-6">
       <button
@@ -37,11 +42,11 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
         </button>
         <div className="flex items-center gap-2.5 rounded-full border border-border bg-card py-1 pl-1 pr-3">
           <span className="grid size-8 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-            {account.name.charAt(0)}
+            {user.name.charAt(0).toUpperCase()}
           </span>
           <div className="hidden leading-tight sm:block">
-            <p className="text-xs font-semibold">{account.name}</p>
-            <p className="text-[10px] text-muted-foreground">{account.id}</p>
+            <p className="text-xs font-semibold">{user.name}</p>
+            <p className="text-[10px] text-muted-foreground">{user.phone}</p>
           </div>
         </div>
       </div>

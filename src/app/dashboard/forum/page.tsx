@@ -2,11 +2,31 @@ import Link from "next/link";
 import { ChevronLeft, Info, Plus, ShieldCheck } from "lucide-react";
 import { Panel } from "@/components/dashboard/panel";
 import { ForumFeed } from "@/components/dashboard/forum-feed";
-import { withdrawalProofs } from "@/lib/mock-data";
+import { getWithdrawalProofs } from "@/app/actions/forum";
+import { formatDateTime, formatRelative, avatarColorForId } from "@/lib/format";
 
 export const metadata = { title: "Forum | Genius fx" };
 
-export default function ForumPage() {
+export default async function ForumPage() {
+  const rows = await getWithdrawalProofs();
+
+  const proofs = rows.map((r) => ({
+    id: r.id,
+    memberMasked: r.memberMasked,
+    avatarColor: avatarColorForId(r.id),
+    timeLabel: formatRelative(r.createdAt),
+    dateTime: formatDateTime(r.createdAt),
+    method: r.method,
+    transactions: [
+      {
+        label: r.label,
+        sublabel: r.method,
+        amount: r.amount,
+        status: "Selesai",
+      },
+    ],
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-3">
@@ -54,7 +74,7 @@ export default function ForumPage() {
         </div>
       </Panel>
 
-      <ForumFeed proofs={withdrawalProofs} />
+      <ForumFeed proofs={proofs} />
     </div>
   );
 }
