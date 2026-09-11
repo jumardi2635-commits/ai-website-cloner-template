@@ -94,3 +94,73 @@ export function formatUsd(value: number): string {
     minimumFractionDigits: 2,
   }).format(value);
 }
+
+/* ---------- Admin panel demo data ---------- */
+
+export type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  tier: "Basic" | "Silver" | "Gold" | "VIP";
+  balance: number;
+  status: "Aktif" | "Ditangguhkan" | "Menunggu";
+  kyc: "Terverifikasi" | "Menunggu" | "Ditolak";
+  joined: string;
+};
+
+export type AdminRequest = {
+  id: string;
+  user: string;
+  type: "Deposit" | "Penarikan";
+  amount: number;
+  method: string;
+  date: string;
+};
+
+export const adminStats = {
+  totalUsers: 12840,
+  usersDelta: 4.8,
+  activeToday: 3120,
+  activeDelta: 1.9,
+  volume: 4820000,
+  volumeDelta: 7.4,
+  pendingKyc: 46,
+  revenue: 286400,
+  revenueDelta: 3.2,
+};
+
+export const adminSignups = [
+  { day: "Sen", users: 180 },
+  { day: "Sel", users: 240 },
+  { day: "Rab", users: 210 },
+  { day: "Kam", users: 300 },
+  { day: "Jum", users: 360 },
+  { day: "Sab", users: 280 },
+  { day: "Min", users: 330 },
+];
+
+export const adminUsers: AdminUser[] = [
+  { id: "GFX-284591", name: "Andi Wijaya", email: "andi.wijaya@example.com", tier: "Gold", balance: 48250.72, status: "Aktif", kyc: "Terverifikasi", joined: "12 Feb 2024" },
+  { id: "GFX-284502", name: "Siti Rahayu", email: "siti.rahayu@example.com", tier: "Silver", balance: 12980.0, status: "Aktif", kyc: "Terverifikasi", joined: "03 Mar 2024" },
+  { id: "GFX-284477", name: "Budi Santoso", email: "budi.santoso@example.com", tier: "VIP", balance: 210400.5, status: "Aktif", kyc: "Terverifikasi", joined: "21 Jan 2024" },
+  { id: "GFX-284610", name: "Dewi Lestari", email: "dewi.lestari@example.com", tier: "Basic", balance: 850.25, status: "Menunggu", kyc: "Menunggu", joined: "07 Sep 2026" },
+  { id: "GFX-284588", name: "Rizky Pratama", email: "rizky.pratama@example.com", tier: "Silver", balance: 5320.9, status: "Ditangguhkan", kyc: "Ditolak", joined: "18 Agu 2026" },
+  { id: "GFX-284533", name: "Maya Putri", email: "maya.putri@example.com", tier: "Gold", balance: 33120.0, status: "Aktif", kyc: "Terverifikasi", joined: "29 Apr 2024" },
+  { id: "GFX-284619", name: "Hendra Kusuma", email: "hendra.kusuma@example.com", tier: "Basic", balance: 1200.0, status: "Menunggu", kyc: "Menunggu", joined: "09 Sep 2026" },
+];
+
+export const adminRequests: AdminRequest[] = [
+  { id: "RQ-5521", user: "Dewi Lestari", type: "Penarikan", amount: 1200, method: "Bank BCA", date: "09 Sep 2026" },
+  { id: "RQ-5520", user: "Rizky Pratama", type: "Deposit", amount: 5000, method: "USDT (TRC20)", date: "09 Sep 2026" },
+  { id: "RQ-5518", user: "Hendra Kusuma", type: "Deposit", amount: 750, method: "Bank Mandiri", date: "08 Sep 2026" },
+  { id: "RQ-5515", user: "Maya Putri", type: "Penarikan", amount: 8200, method: "Bank BNI", date: "08 Sep 2026" },
+];
+
+export function formatUsdCompact(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}

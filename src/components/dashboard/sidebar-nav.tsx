@@ -6,8 +6,10 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   CandlestickChart,
+  TrendingUp,
   Wallet,
   UserRound,
+  ShieldCheck,
   LifeBuoy,
   LogOut,
   X,
@@ -16,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/trade", label: "Trading", icon: TrendingUp },
   { href: "/dashboard/markets", label: "Pasar", icon: CandlestickChart },
   { href: "/dashboard/wallet", label: "Dompet", icon: Wallet },
   { href: "/dashboard/profile", label: "Profil", icon: UserRound },
@@ -96,6 +99,14 @@ export function SidebarNav({
         </nav>
 
         <div className="space-y-1 border-t border-border px-3 py-4">
+          <Link
+            href="/admin"
+            onClick={onClose}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <ShieldCheck className="size-4" />
+            Admin Panel
+          </Link>
           <button
             type="button"
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
