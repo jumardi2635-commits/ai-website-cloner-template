@@ -1,21 +1,14 @@
-"use client";
-
-import { useState } from "react";
-import { SidebarNav } from "@/components/dashboard/sidebar-nav";
-import { Topbar } from "@/components/dashboard/topbar";
+import { BottomNav } from "@/components/dashboard/bottom-nav";
+import { SupportButton } from "@/components/dashboard/support-button";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
-    <div className="flex min-h-screen">
-      <SidebarNav open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar onMenu={() => setMenuOpen(true)} />
-        <main className="hex-backdrop flex-1 px-4 py-6 md:px-6">
-          <div className="mx-auto w-full max-w-6xl">{children}</div>
-        </main>
+    <div className="hex-backdrop min-h-screen">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col pb-24">
+        <main className="flex-1 px-4 py-4">{children}</main>
       </div>
+      <BottomNav />
+      <SupportButton />
     </div>
   );
 }

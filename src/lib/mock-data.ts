@@ -122,6 +122,74 @@ export const marketTicker = [
   "Pasar emas XAU/USD sedang bullish hari ini",
 ];
 
+// "Menu Cepat" quick-access grid shown on the Beranda (home) dashboard page.
+export type QuickMenuItem = {
+  label: string;
+  href: string;
+  icon: "market" | "invest" | "referral" | "bonus" | "forum" | "edukasi" | "history" | "help";
+  badge?: string;
+};
+
+export const quickMenu: QuickMenuItem[] = [
+  { label: "Pasar EA", href: "/dashboard/market", icon: "market" },
+  { label: "Investasi", href: "/dashboard/invest", icon: "invest" },
+  { label: "Referral", href: "/dashboard/bonus", icon: "referral", badge: "Hot" },
+  { label: "Bonus", href: "/dashboard/bonus", icon: "bonus" },
+  { label: "Forum", href: "/dashboard/forum", icon: "forum" },
+  { label: "Edukasi", href: "/dashboard/forum", icon: "edukasi" },
+  { label: "Riwayat", href: "/dashboard/history", icon: "history" },
+  { label: "Bantuan", href: "/dashboard/help", icon: "help" },
+];
+
+// Referral / bonus program tiers — used on the Bonus & Referral page.
+export type BonusTier = {
+  amount: number;
+  targetReferrals: number;
+  unlocked: boolean;
+};
+
+export const bonusTiers: BonusTier[] = [
+  { amount: 20_000, targetReferrals: 5, unlocked: false },
+  { amount: 80_000, targetReferrals: 25, unlocked: false },
+  { amount: 300_000, targetReferrals: 80, unlocked: false },
+  { amount: 700_000, targetReferrals: 300, unlocked: false },
+  { amount: 1_000_000, targetReferrals: 500, unlocked: false },
+  { amount: 30_000_000, targetReferrals: 5000, unlocked: false },
+];
+
+export const bonusSummary = {
+  totalBonus: 0,
+  bonusActive: 0,
+  bonusLocked: 0,
+  bonusClaimed: 0,
+};
+
+// "Akun Saya" (profile) page sections.
+export type AccountMenuItem = {
+  label: string;
+  hint: string;
+  icon: "profile" | "password" | "shield" | "bank" | "wallet" | "history" | "swap" | "gift" | "settings" | "help";
+};
+
+export const accountDataMenu: AccountMenuItem[] = [
+  { label: "Profil Saya", hint: "Lihat informasi akun terdaftar", icon: "profile" },
+  { label: "Ubah Kata Sandi", hint: "Perbarui password login", icon: "password" },
+  { label: "Verifikasi Keamanan", hint: "Perlindungan akun & lisensi resmi", icon: "shield" },
+  { label: "Rekening Penarikan", hint: "Atur bank tujuan pencairan dana", icon: "bank" },
+];
+
+export const accountInvestMenu: AccountMenuItem[] = [
+  { label: "Portofolio EA", hint: `${account.activePackages} robot investasi aktif`, icon: "wallet" },
+  { label: "Mutasi Dompet", hint: "Riwayat setor, tarik, dan bonus", icon: "history" },
+  { label: "Riwayat Investasi", hint: "Semua EA yang pernah dibeli", icon: "swap" },
+  { label: "Bonus & Reward", hint: "Klaim bonus dan promo aktif", icon: "gift" },
+];
+
+export const accountSettingsMenu: AccountMenuItem[] = [
+  { label: "Tentang Aplikasi", hint: "Info Genius fx dan pusat bantuan", icon: "settings" },
+  { label: "Layanan Bantuan", hint: "Hubungi customer service", icon: "help" },
+];
+
 // Portfolio equity trend (last 7 days) — used on the Dashboard equity chart.
 export type EquityPoint = { day: string; equity: number };
 
