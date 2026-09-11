@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Wallet,
   UserRound,
+  MessagesSquare,
   ShieldCheck,
   LifeBuoy,
   LogOut,
@@ -21,6 +22,7 @@ const links = [
   { href: "/dashboard/trade", label: "Trading", icon: TrendingUp },
   { href: "/dashboard/markets", label: "Pasar", icon: CandlestickChart },
   { href: "/dashboard/wallet", label: "Dompet", icon: Wallet },
+  { href: "/dashboard/forum", label: "Forum", icon: MessagesSquare },
   { href: "/dashboard/profile", label: "Profil", icon: UserRound },
 ];
 
