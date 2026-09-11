@@ -1,166 +1,133 @@
-export type Instrument = {
-  symbol: string;
+// Demo-only data for the Genius fx clone. Nothing here is real financial data.
+
+export type Tier = "Konservatif" | "Seimbang" | "Agresif";
+export type AssetClass = "Forex" | "Emas" | "Kripto";
+
+export type EaProduct = {
+  id: string;
   name: string;
-  price: number;
-  change: number; // percent
-  category: "Forex" | "Kripto" | "Saham" | "Komoditas";
-};
-
-export type Position = {
-  id: string;
-  symbol: string;
-  side: "BUY" | "SELL";
-  lots: number;
-  entry: number;
-  current: number;
-  pnl: number;
-};
-
-export type Transaction = {
-  id: string;
-  type: "Deposit" | "Penarikan" | "Bonus";
-  amount: number;
-  status: "Selesai" | "Diproses" | "Ditolak";
-  date: string;
+  asset: AssetClass;
+  tier: Tier;
+  price: number; // modal investasi (IDR)
+  returnPct: number; // return harian dalam persen dari modal
+  durationDays: number;
+  popular?: boolean;
+  spark: number[];
 };
 
 export const account = {
-  name: "Andi Wijaya",
-  id: "GFX-284591",
-  tier: "Gold",
-  email: "andi.wijaya@example.com",
-  phone: "+62 812-3456-7890",
-  joined: "12 Feb 2024",
+  name: "User",
+  phone: "089530052136",
+  id: "089530052136",
+  referralCode: "ZXOS2N6V",
+  joined: "12 Agu 2026",
   verified: true,
-  balance: 48250.72,
-  equity: 51930.16,
-  margin: 6420.5,
-  freeMargin: 45509.66,
-  todayPnl: 1284.35,
-  todayPnlPct: 2.61,
+  totalBalance: 0,
+  mainBalance: 0,
+  eaProfit: 0,
+  withdrawn: 0,
+  totalInvestment: 0,
+  activePackages: 0,
+  totalReturn: 0,
+  referrals: 0,
+  referralBonus: 0,
 };
 
-export const equitySeries = [
-  { day: "Sen", equity: 46200 },
-  { day: "Sel", equity: 47100 },
-  { day: "Rab", equity: 46850 },
-  { day: "Kam", equity: 48400 },
-  { day: "Jum", equity: 49950 },
-  { day: "Sab", equity: 50620 },
-  { day: "Min", equity: 51930 },
-];
-
-export const allocation = [
-  { name: "Forex", value: 42, color: "var(--chart-1)" },
-  { name: "Kripto", value: 28, color: "var(--chart-2)" },
-  { name: "Saham", value: 18, color: "var(--primary-strong)" },
-  { name: "Komoditas", value: 12, color: "var(--muted-foreground)" },
-];
-
-export const instruments: Instrument[] = [
-  { symbol: "EUR/USD", name: "Euro / US Dollar", price: 1.0872, change: 0.32, category: "Forex" },
-  { symbol: "GBP/USD", name: "Pound / US Dollar", price: 1.2715, change: -0.18, category: "Forex" },
-  { symbol: "USD/JPY", name: "US Dollar / Yen", price: 156.42, change: 0.44, category: "Forex" },
-  { symbol: "BTC/USD", name: "Bitcoin", price: 67420.5, change: 3.12, category: "Kripto" },
-  { symbol: "ETH/USD", name: "Ethereum", price: 3512.8, change: 1.87, category: "Kripto" },
-  { symbol: "SOL/USD", name: "Solana", price: 172.34, change: -2.05, category: "Kripto" },
-  { symbol: "XAU/USD", name: "Emas", price: 2342.1, change: 0.68, category: "Komoditas" },
-  { symbol: "WTI", name: "Minyak Mentah", price: 78.9, change: -0.92, category: "Komoditas" },
-  { symbol: "AAPL", name: "Apple Inc.", price: 214.29, change: 1.14, category: "Saham" },
-  { symbol: "TSLA", name: "Tesla Inc.", price: 182.47, change: -1.42, category: "Saham" },
-  { symbol: "NVDA", name: "NVIDIA Corp.", price: 124.72, change: 2.76, category: "Saham" },
-  { symbol: "BBCA", name: "Bank Central Asia", price: 9825, change: 0.51, category: "Saham" },
-];
-
-export const positions: Position[] = [
-  { id: "P-1", symbol: "BTC/USD", side: "BUY", lots: 0.15, entry: 65120, current: 67420.5, pnl: 345.08 },
-  { id: "P-2", symbol: "EUR/USD", side: "BUY", lots: 1.0, entry: 1.084, current: 1.0872, pnl: 320.0 },
-  { id: "P-3", symbol: "XAU/USD", side: "SELL", lots: 0.5, entry: 2358.4, current: 2342.1, pnl: 815.0 },
-  { id: "P-4", symbol: "TSLA", side: "BUY", lots: 10, entry: 188.2, current: 182.47, pnl: -57.3 },
-];
-
-export const transactions: Transaction[] = [
-  { id: "TX-9051", type: "Deposit", amount: 5000, status: "Selesai", date: "08 Sep 2026" },
-  { id: "TX-9042", type: "Penarikan", amount: 1200, status: "Diproses", date: "05 Sep 2026" },
-  { id: "TX-9033", type: "Bonus", amount: 250, status: "Selesai", date: "01 Sep 2026" },
-  { id: "TX-9018", type: "Deposit", amount: 10000, status: "Selesai", date: "24 Agu 2026" },
-  { id: "TX-9004", type: "Penarikan", amount: 800, status: "Ditolak", date: "18 Agu 2026" },
-];
-
-export function formatUsd(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
+// Deterministic sparkline so server and client render identically.
+function makeSpark(seed: number, up: boolean): number[] {
+  const out: number[] = [];
+  let v = 100;
+  for (let i = 0; i < 24; i++) {
+    const wobble = Math.sin((seed + i) * 1.3) * 4;
+    const drift = (up ? 1 : -1) * i * (up ? 1.6 : 0.9);
+    v = 100 + drift + wobble;
+    out.push(Math.round(v * 100) / 100);
+  }
+  return out;
 }
 
-/* ---------- Admin panel demo data ---------- */
+const rawProducts: Array<Omit<EaProduct, "id" | "spark">> = [
+  { name: "Genius Far", asset: "Forex", tier: "Konservatif", price: 50_000, returnPct: 38, durationDays: 40, popular: true },
+  { name: "Genius Aer", asset: "Emas", tier: "Konservatif", price: 100_000, returnPct: 38, durationDays: 40 },
+  { name: "Genius Bit", asset: "Kripto", tier: "Seimbang", price: 150_000, returnPct: 56.99, durationDays: 3 },
+  { name: "Genius Per", asset: "Kripto", tier: "Konservatif", price: 250_000, returnPct: 50, durationDays: 40, popular: true },
+  { name: "Genius Nova", asset: "Forex", tier: "Seimbang", price: 300_000, returnPct: 55.54, durationDays: 3 },
+  { name: "Genius Eig", asset: "Forex", tier: "Konservatif", price: 500_000, returnPct: 50, durationDays: 40 },
+  { name: "Genius Lux", asset: "Emas", tier: "Seimbang", price: 500_000, returnPct: 57.12, durationDays: 3 },
+  { name: "Genius Volt", asset: "Kripto", tier: "Seimbang", price: 750_000, returnPct: 55.72, durationDays: 3 },
+  { name: "Genius Quant", asset: "Forex", tier: "Konservatif", price: 800_000, returnPct: 43.75, durationDays: 40 },
+  { name: "Genius Apex", asset: "Emas", tier: "Konservatif", price: 1_000_000, returnPct: 62.83, durationDays: 40 },
+  { name: "Genius Flux", asset: "Kripto", tier: "Seimbang", price: 1_000_000, returnPct: 64.61, durationDays: 3 },
+  { name: "Genius Orbit", asset: "Forex", tier: "Konservatif", price: 1_250_000, returnPct: 66.67, durationDays: 40 },
+  { name: "Genius Prime", asset: "Emas", tier: "Konservatif", price: 1_500_000, returnPct: 62.75, durationDays: 40 },
+  { name: "Genius Titan", asset: "Kripto", tier: "Seimbang", price: 2_000_000, returnPct: 73.96, durationDays: 3 },
+  { name: "Genius Delta", asset: "Forex", tier: "Konservatif", price: 2_000_000, returnPct: 49.91, durationDays: 40 },
+  { name: "Genius Sigma", asset: "Emas", tier: "Seimbang", price: 3_000_000, returnPct: 64.39, durationDays: 3 },
+  { name: "Genius Halo", asset: "Kripto", tier: "Konservatif", price: 3_000_000, returnPct: 48.08, durationDays: 40 },
+  { name: "Genius Zenith", asset: "Forex", tier: "Konservatif", price: 5_000_000, returnPct: 62.65, durationDays: 40 },
+  { name: "Genius Aura", asset: "Emas", tier: "Seimbang", price: 5_000_000, returnPct: 58.18, durationDays: 3 },
+  { name: "Genius Pulse", asset: "Kripto", tier: "Konservatif", price: 7_500_000, returnPct: 52.77, durationDays: 40 },
+  { name: "Genius Vertex", asset: "Forex", tier: "Konservatif", price: 10_000_000, returnPct: 63.76, durationDays: 40 },
+  { name: "Genius Onyx", asset: "Emas", tier: "Seimbang", price: 10_000_000, returnPct: 54.76, durationDays: 3 },
+  { name: "Genius Helix", asset: "Kripto", tier: "Konservatif", price: 15_000_000, returnPct: 48.38, durationDays: 40 },
+  { name: "Genius Infinity", asset: "Forex", tier: "Agresif", price: 25_000_000, returnPct: 71.4, durationDays: 3, popular: true },
+];
 
-export type AdminUser = {
-  id: string;
-  name: string;
-  email: string;
-  tier: "Basic" | "Silver" | "Gold" | "VIP";
-  balance: number;
-  status: "Aktif" | "Ditangguhkan" | "Menunggu";
-  kyc: "Terverifikasi" | "Menunggu" | "Ditolak";
-  joined: string;
-};
+export const products: EaProduct[] = rawProducts.map((p, i) => ({
+  ...p,
+  id: `gfx-${String(i + 1).padStart(3, "0")}`,
+  spark: makeSpark(i + 1, p.returnPct >= 55),
+}));
 
-export type AdminRequest = {
+export function productById(id: string): EaProduct | undefined {
+  return products.find((p) => p.id === id);
+}
+
+export function dailyReturn(p: EaProduct): number {
+  return Math.round(p.price * (p.returnPct / 100));
+}
+
+export function totalReturn(p: EaProduct): number {
+  return dailyReturn(p) * p.durationDays;
+}
+
+export const homeStats = [
+  { label: "Investor Aktif", value: "10.248+" },
+  { label: "Total Cair Hari Ini", value: "Rp 892jt" },
+  { label: "Paket EA Tersedia", value: "24 Paket" },
+  { label: "Respon CS", value: "< 5 Menit" },
+];
+
+export type LiveActivity = {
   id: string;
-  user: string;
-  type: "Deposit" | "Penarikan";
+  masked: string;
+  action: string;
   amount: number;
-  method: string;
-  date: string;
+  ago: string;
 };
 
-export const adminStats = {
-  totalUsers: 12840,
-  usersDelta: 4.8,
-  activeToday: 3120,
-  activeDelta: 1.9,
-  volume: 4820000,
-  volumeDelta: 7.4,
-  pendingKyc: 46,
-  revenue: 286400,
-  revenueDelta: 3.2,
-};
-
-export const adminSignups = [
-  { day: "Sen", users: 180 },
-  { day: "Sel", users: 240 },
-  { day: "Rab", users: 210 },
-  { day: "Kam", users: 300 },
-  { day: "Jum", users: 360 },
-  { day: "Sab", users: 280 },
-  { day: "Min", users: 330 },
+export const liveActivities: LiveActivity[] = [
+  { id: "a1", masked: "User ****2847", action: "baru investasi", amount: 500_000, ago: "2 mnt lalu" },
+  { id: "a2", masked: "User ****9103", action: "tarik dana", amount: 1_200_000, ago: "5 mnt lalu" },
+  { id: "a3", masked: "User ****5521", action: "baru investasi", amount: 250_000, ago: "8 mnt lalu" },
+  { id: "a4", masked: "User ****7734", action: "cair profit", amount: 45_000, ago: "12 mnt lalu" },
+  { id: "a5", masked: "User ****3389", action: "baru investasi", amount: 1_000_000, ago: "15 mnt lalu" },
+  { id: "a6", masked: "User ****1102", action: "cair profit", amount: 92_000, ago: "19 mnt lalu" },
 ];
 
-export const adminUsers: AdminUser[] = [
-  { id: "GFX-284591", name: "Andi Wijaya", email: "andi.wijaya@example.com", tier: "Gold", balance: 48250.72, status: "Aktif", kyc: "Terverifikasi", joined: "12 Feb 2024" },
-  { id: "GFX-284502", name: "Siti Rahayu", email: "siti.rahayu@example.com", tier: "Silver", balance: 12980.0, status: "Aktif", kyc: "Terverifikasi", joined: "03 Mar 2024" },
-  { id: "GFX-284477", name: "Budi Santoso", email: "budi.santoso@example.com", tier: "VIP", balance: 210400.5, status: "Aktif", kyc: "Terverifikasi", joined: "21 Jan 2024" },
-  { id: "GFX-284610", name: "Dewi Lestari", email: "dewi.lestari@example.com", tier: "Basic", balance: 850.25, status: "Menunggu", kyc: "Menunggu", joined: "07 Sep 2026" },
-  { id: "GFX-284588", name: "Rizky Pratama", email: "rizky.pratama@example.com", tier: "Silver", balance: 5320.9, status: "Ditangguhkan", kyc: "Ditolak", joined: "18 Agu 2026" },
-  { id: "GFX-284533", name: "Maya Putri", email: "maya.putri@example.com", tier: "Gold", balance: 33120.0, status: "Aktif", kyc: "Terverifikasi", joined: "29 Apr 2024" },
-  { id: "GFX-284619", name: "Hendra Kusuma", email: "hendra.kusuma@example.com", tier: "Basic", balance: 1200.0, status: "Menunggu", kyc: "Menunggu", joined: "09 Sep 2026" },
+export const marketTicker = [
+  "Paket EA Agresif profit hingga 3% per hari",
+  "Bonus referral aktif — ajak teman dapat komisi",
+  "Penarikan diproses 24 jam setiap hari",
+  "Pasar emas XAU/USD sedang bullish hari ini",
 ];
 
-export const adminRequests: AdminRequest[] = [
-  { id: "RQ-5521", user: "Dewi Lestari", type: "Penarikan", amount: 1200, method: "Bank BCA", date: "09 Sep 2026" },
-  { id: "RQ-5520", user: "Rizky Pratama", type: "Deposit", amount: 5000, method: "USDT (TRC20)", date: "09 Sep 2026" },
-  { id: "RQ-5518", user: "Hendra Kusuma", type: "Deposit", amount: 750, method: "Bank Mandiri", date: "08 Sep 2026" },
-  { id: "RQ-5515", user: "Maya Putri", type: "Penarikan", amount: 8200, method: "Bank BNI", date: "08 Sep 2026" },
-];
+export function formatIdr(value: number): string {
+  return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(value));
+}
 
-export function formatUsdCompact(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  }).format(value);
+export function formatIdrCompact(value: number): string {
+  if (value >= 1_000_000) return "Rp " + (value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1) + "jt";
+  if (value >= 1_000) return "Rp " + (value / 1_000).toFixed(0) + "rb";
+  return "Rp " + value;
 }

@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { LoginForm } from "@/components/login-form";
+import { RegisterForm } from "@/components/register-form";
 import { RegulatorBadges } from "@/components/regulator-badges";
 
-export default function Home() {
+export default function RegisterPage() {
   return (
     <main className="hex-backdrop flex min-h-screen flex-col items-center px-4 py-6">
       <div className="mb-6 flex w-full max-w-md justify-end">
@@ -33,16 +33,14 @@ export default function Home() {
         </header>
 
         <div className="flex flex-col items-center gap-1 text-center">
-          <h2 className="text-2xl font-bold text-foreground">
-            Selamat Datang Kembali!
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">Buat Akun</h2>
           <p className="text-sm text-muted-foreground text-pretty">
-            Masuk untuk melanjutkan perjalanan trading Anda
+            Daftar untuk memulai perjalanan trading Anda
           </p>
         </div>
 
         <div className="w-full">
-          <LoginForm />
+          <RegisterForm />
         </div>
 
         <div className="w-full">
@@ -50,12 +48,12 @@ export default function Home() {
         </div>
 
         <p className="text-sm text-muted-foreground">
-          Belum punya akun?{" "}
+          Sudah punya akun?{" "}
           <Link
-            href="/register"
+            href="/"
             className="font-semibold text-accent underline-offset-4 hover:underline"
           >
-            Daftar sekarang
+            Masuk sekarang
           </Link>
         </p>
       </div>
