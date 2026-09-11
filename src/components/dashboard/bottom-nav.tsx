@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LineChart, PieChart, History, User } from "lucide-react";
+import { Home, CandlestickChart, Wallet, MessagesSquare, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items = [
   { href: "/dashboard", label: "Beranda", icon: Home },
-  { href: "/dashboard/market", label: "Pasar", icon: LineChart },
-  { href: "/dashboard/invest", label: "Investasi", icon: PieChart, center: true },
-  { href: "/dashboard/history", label: "Riwayat", icon: History },
-  { href: "/dashboard/account", label: "Profil", icon: User },
+  { href: "/dashboard/markets", label: "Pasar", icon: CandlestickChart },
+  { href: "/dashboard/wallet", label: "Dompet", icon: Wallet, center: true },
+  { href: "/dashboard/forum", label: "Forum", icon: MessagesSquare },
+  { href: "/dashboard/profile", label: "Profil", icon: UserRound },
 ];
 
 export function BottomNav() {

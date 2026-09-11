@@ -188,6 +188,98 @@ export const transactions: WalletTx[] = [
   { id: "TX-10155", type: "Deposit", amount: 1_000_000, status: "Selesai", date: "24 Agu 2026" },
 ];
 
+// Payment methods available for deposit — mock destination accounts.
+export type PaymentMethod = {
+  id: string;
+  name: string;
+  category: "Bank" | "E-Wallet" | "Kripto";
+  accountName: string;
+  accountNumber: string;
+  minAmount: number;
+  feePct: number;
+};
+
+export const paymentMethods: PaymentMethod[] = [
+  { id: "bca", name: "Bank BCA", category: "Bank", accountName: "PT Genius Fx Indonesia", accountNumber: "1234567890", minAmount: 50_000, feePct: 0 },
+  { id: "bni", name: "Bank BNI", category: "Bank", accountName: "PT Genius Fx Indonesia", accountNumber: "0987654321", minAmount: 50_000, feePct: 0 },
+  { id: "mandiri", name: "Bank Mandiri", category: "Bank", accountName: "PT Genius Fx Indonesia", accountNumber: "1300009876", minAmount: 50_000, feePct: 0 },
+  { id: "ovo", name: "OVO", category: "E-Wallet", accountName: "Genius Fx", accountNumber: "0895-3005-2136", minAmount: 50_000, feePct: 1.5 },
+  { id: "gopay", name: "GoPay", category: "E-Wallet", accountName: "Genius Fx", accountNumber: "0895-3005-2136", minAmount: 50_000, feePct: 1.5 },
+  { id: "usdt-trc20", name: "USDT (TRC20)", category: "Kripto", accountName: "Genius Fx Wallet", accountNumber: "TXn8pQmZ...GfxA9k2", minAmount: 100_000, feePct: 0 },
+];
+
+export const depositChips = [100_000, 250_000, 500_000, 1_000_000, 5_000_000, 10_000_000];
+
+// Saved withdrawal destination for the current user.
+export const savedBankAccount = {
+  bankName: "Bank BCA",
+  accountName: "USER GENIUS",
+  accountNumber: "5502019384",
+};
+
+export const withdrawFeeFlat = 6_500;
+export const minWithdraw = 50_000;
+
+export type NotificationItem = {
+  id: string;
+  type: "Transaksi" | "Promo" | "Sistem";
+  title: string;
+  body: string;
+  time: string;
+  read: boolean;
+};
+
+export const notifications: NotificationItem[] = [
+  {
+    id: "n1",
+    type: "Transaksi",
+    title: "Penarikan berhasil diproses",
+    body: "Penarikan sebesar Rp 850.000 telah ditransfer ke rekening Bank BCA Anda.",
+    time: "5 mnt lalu",
+    read: false,
+  },
+  {
+    id: "n2",
+    type: "Transaksi",
+    title: "Profit EA masuk",
+    body: "Genius Aer membagikan profit harian sebesar Rp 39.475 ke saldo utama Anda.",
+    time: "1 jam lalu",
+    read: false,
+  },
+  {
+    id: "n3",
+    type: "Promo",
+    title: "Bonus deposit 20%",
+    body: "Deposit hari ini dan dapatkan bonus saldo 20% untuk setoran pertama bulan ini.",
+    time: "3 jam lalu",
+    read: false,
+  },
+  {
+    id: "n4",
+    type: "Sistem",
+    title: "Verifikasi akun selesai",
+    body: "Akun Anda telah terverifikasi penuh. Semua fitur deposit dan penarikan aktif.",
+    time: "Kemarin",
+    read: true,
+  },
+  {
+    id: "n5",
+    type: "Transaksi",
+    title: "Deposit diterima",
+    body: "Deposit sebesar Rp 500.000 melalui Bank BCA telah dikonfirmasi.",
+    time: "2 hari lalu",
+    read: true,
+  },
+  {
+    id: "n6",
+    type: "Sistem",
+    title: "Pemeliharaan server terjadwal",
+    body: "Platform akan menjalani pemeliharaan singkat pada 02.00-02.30 WIB.",
+    time: "3 hari lalu",
+    read: true,
+  },
+];
+
 export function formatIdr(value: number): string {
   return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(value));
 }

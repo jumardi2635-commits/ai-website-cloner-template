@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ArrowDownToLine, ArrowUpFromLine, Gift } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
 import { account, transactions, formatIdr } from "@/lib/mock-data";
@@ -30,20 +31,20 @@ export default function WalletPage() {
             </p>
           </div>
           <div className="mt-6 flex gap-2">
-            <button
-              type="button"
+            <Link
+              href="/dashboard/wallet/deposit"
               className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-semibold backdrop-blur hover:bg-primary-foreground/25"
             >
               <ArrowDownToLine className="size-4" />
               Deposit
-            </button>
-            <button
-              type="button"
+            </Link>
+            <Link
+              href="/dashboard/wallet/withdraw"
               className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary-foreground/15 px-3 py-2 text-sm font-semibold backdrop-blur hover:bg-primary-foreground/25"
             >
               <ArrowUpFromLine className="size-4" />
               Tarik
-            </button>
+            </Link>
           </div>
         </Panel>
 
@@ -70,8 +71,14 @@ export default function WalletPage() {
       </div>
 
       <Panel className="p-0">
-        <div className="border-b border-border px-5 py-4">
+        <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-sm font-semibold">Riwayat Transaksi</h2>
+          <Link
+            href="/dashboard/wallet/history"
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            Lihat Semua
+          </Link>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -85,7 +92,7 @@ export default function WalletPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
+              {transactions.slice(0, 5).map((tx) => (
                 <tr
                   key={tx.id}
                   className="border-b border-border/60 last:border-0 hover:bg-secondary/50"

@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { Menu, Bell, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { account } from "@/lib/mock-data";
+import { account, notifications } from "@/lib/mock-data";
 
 export function Topbar({ onMenu }: { onMenu: () => void }) {
   return (
@@ -27,14 +28,16 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="ml-auto flex items-center gap-3">
         <ThemeToggle />
-        <button
-          type="button"
+        <Link
+          href="/dashboard/notifications"
           aria-label="Notifikasi"
           className="relative rounded-full border border-border bg-card p-2 text-muted-foreground hover:text-foreground"
         >
           <Bell className="size-4" />
-          <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />
-        </button>
+          {notifications.some((n) => !n.read) ? (
+            <span className="absolute right-1.5 top-1.5 size-1.5 rounded-full bg-accent" />
+          ) : null}
+        </Link>
         <div className="flex items-center gap-2.5 rounded-full border border-border bg-card py-1 pl-1 pr-3">
           <span className="grid size-8 place-items-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
             {account.name.charAt(0)}
