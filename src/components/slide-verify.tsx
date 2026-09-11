@@ -14,6 +14,7 @@ export function SlideVerify({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
+  const [prevVerified, setPrevVerified] = useState(verified);
   const draggingRef = useRef(false);
 
   const maxOffset = useCallback(() => {
@@ -22,9 +23,10 @@ export function SlideVerify({
     return track.clientWidth - HANDLE;
   }, []);
 
-  useEffect(() => {
+  if (prevVerified !== verified) {
+    setPrevVerified(verified);
     if (!verified) setOffset(0);
-  }, [verified]);
+  }
 
   useEffect(() => {
     function move(clientX: number) {
