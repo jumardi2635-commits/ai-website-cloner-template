@@ -131,3 +131,113 @@ export function formatIdrCompact(value: number): string {
   if (value >= 1_000) return "Rp " + (value / 1_000).toFixed(0) + "rb";
   return "Rp " + value;
 }
+
+// Forum / bukti penarikan (social proof feed shown on the "Forum" quick menu).
+export type ForumProofTx = {
+  label: string;
+  sublabel: string;
+  amount: number;
+  status: "Selesai" | "Diproses";
+};
+
+export type WithdrawalProof = {
+  id: number;
+  memberMasked: string;
+  avatarColor: string;
+  timeLabel: string;
+  dateTime: string;
+  method: string;
+  transactions: ForumProofTx[];
+};
+
+export const withdrawalProofs: WithdrawalProof[] = [
+  {
+    id: 44,
+    memberMasked: "•••9144",
+    avatarColor: "bg-rose-500",
+    timeLabel: "Hari ini • 05.07",
+    dateTime: "11 Sep 2026, 05.07",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Penarikan", sublabel: "6 September 2026 · 14.52", amount: 850_000, status: "Selesai" },
+    ],
+  },
+  {
+    id: 46,
+    memberMasked: "•••0846",
+    avatarColor: "bg-sky-500",
+    timeLabel: "Hari ini • 04.02",
+    dateTime: "11 Sep 2026, 04.02",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Laba Transaksi", sublabel: "Genius Far · 10 Sep 2026, 01.00", amount: 20_118, status: "Selesai" },
+      { label: "Laba Transaksi", sublabel: "Genius Aer · 10 Sep 2026, 01.00", amount: 39_475, status: "Selesai" },
+    ],
+  },
+  {
+    id: 91,
+    memberMasked: "•••6491",
+    avatarColor: "bg-emerald-500",
+    timeLabel: "Hari ini • 03.48",
+    dateTime: "11 Sep 2026, 03.48",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Penarikan", sublabel: "11 September 2026 · 10.47", amount: 340_000, status: "Selesai" },
+    ],
+  },
+  {
+    id: 52,
+    memberMasked: "•••9452",
+    avatarColor: "bg-violet-500",
+    timeLabel: "Hari ini • 02.27",
+    dateTime: "11 Sep 2026, 02.27",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Penarikan", sublabel: "11 September 2026 · 09.25", amount: 150_000, status: "Selesai" },
+    ],
+  },
+  {
+    id: 38,
+    memberMasked: "•••3312",
+    avatarColor: "bg-amber-500",
+    timeLabel: "Hari ini • 01.15",
+    dateTime: "11 Sep 2026, 01.15",
+    method: "E-Wallet",
+    transactions: [
+      { label: "Laba Transaksi", sublabel: "Genius Bit · 10 Sep 2026, 22.00", amount: 63_400, status: "Selesai" },
+    ],
+  },
+  {
+    id: 27,
+    memberMasked: "•••7720",
+    avatarColor: "bg-pink-500",
+    timeLabel: "Kemarin • 23.52",
+    dateTime: "10 Sep 2026, 23.52",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Penarikan", sublabel: "10 September 2026 · 20.10", amount: 1_250_000, status: "Selesai" },
+    ],
+  },
+  {
+    id: 15,
+    memberMasked: "•••5502",
+    avatarColor: "bg-indigo-500",
+    timeLabel: "Kemarin • 20.33",
+    dateTime: "10 Sep 2026, 20.33",
+    method: "USDT (TRC20)",
+    transactions: [
+      { label: "Laba Transaksi", sublabel: "Genius Per · 10 Sep 2026, 18.00", amount: 97_250, status: "Selesai" },
+    ],
+  },
+  {
+    id: 9,
+    memberMasked: "•••1189",
+    avatarColor: "bg-orange-500",
+    timeLabel: "Kemarin • 18.04",
+    dateTime: "10 Sep 2026, 18.04",
+    method: "Transfer Bank",
+    transactions: [
+      { label: "Penarikan", sublabel: "10 September 2026 · 15.00", amount: 500_000, status: "Selesai" },
+    ],
+  },
+];
