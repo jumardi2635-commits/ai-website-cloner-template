@@ -1,6 +1,6 @@
 import { ArrowDownToLine, ArrowUpFromLine, Gift } from "lucide-react";
 import { Panel, PanelHeader } from "@/components/dashboard/panel";
-import { account, transactions, formatUsd } from "@/lib/mock-data";
+import { account, transactions, formatIdr } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Dompet | Genius fx" };
@@ -26,7 +26,7 @@ export default function WalletPage() {
           <div>
             <p className="text-sm opacity-80">Saldo Tersedia</p>
             <p className="mt-1 text-3xl font-bold tracking-tight">
-              {formatUsd(account.balance)}
+              {formatIdr(account.mainBalance)}
             </p>
           </div>
           <div className="mt-6 flex gap-2">
@@ -99,7 +99,7 @@ export default function WalletPage() {
                     )}
                   >
                     {tx.type === "Penarikan" ? "-" : "+"}
-                    {formatUsd(tx.amount)}
+                    {formatIdr(tx.amount)}
                   </td>
                   <td className="px-5 py-3">
                     <span

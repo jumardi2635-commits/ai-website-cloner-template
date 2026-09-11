@@ -1,9 +1,9 @@
 import {
   BadgeCheck,
-  Mail,
   Phone,
   Calendar,
   Shield,
+  Gift,
   KeyRound,
   Smartphone,
   ChevronRight,
@@ -14,10 +14,10 @@ import { account } from "@/lib/mock-data";
 export const metadata = { title: "Profil | Genius fx" };
 
 const details = [
-  { label: "Email", value: account.email, icon: Mail },
   { label: "Nomor Telepon", value: account.phone, icon: Phone },
   { label: "Tanggal Bergabung", value: account.joined, icon: Calendar },
   { label: "ID Akun", value: account.id, icon: Shield },
+  { label: "Kode Referral", value: account.referralCode, icon: Gift },
 ];
 
 const security = [
@@ -51,9 +51,9 @@ export default function ProfilePage() {
                 </span>
               ) : null}
             </div>
-            <p className="text-sm text-muted-foreground">{account.email}</p>
+            <p className="text-sm text-muted-foreground">{account.phone}</p>
             <span className="mt-2 inline-block rounded-full bg-accent/20 px-3 py-0.5 text-xs font-semibold text-accent-foreground">
-              Tier {account.tier}
+              {account.activePackages} Paket Aktif
             </span>
           </div>
           <button

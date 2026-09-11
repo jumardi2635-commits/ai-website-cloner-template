@@ -122,6 +122,72 @@ export const marketTicker = [
   "Pasar emas XAU/USD sedang bullish hari ini",
 ];
 
+// Portfolio equity trend (last 7 days) — used on the Dashboard equity chart.
+export type EquityPoint = { day: string; equity: number };
+
+export const equitySeries: EquityPoint[] = (() => {
+  const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+  const end = account.totalBalance || 4_250_000;
+  const start = end * 0.82;
+  return days.map((day, i) => {
+    const t = i / (days.length - 1);
+    const wobble = Math.sin(i * 1.7) * end * 0.015;
+    return { day, equity: Math.round(start + (end - start) * t + wobble) };
+  });
+})();
+
+// Portfolio allocation by asset class — used on the Dashboard allocation chart.
+export type AllocationSlice = { name: AssetClass; value: number; color: string };
+
+export const allocation: AllocationSlice[] = (() => {
+  const colors: Record<AssetClass, string> = {
+    Forex: "var(--chart-1)",
+    Emas: "var(--chart-2)",
+    Kripto: "var(--chart-3)",
+  };
+  const totals: Record<AssetClass, number> = { Forex: 0, Emas: 0, Kripto: 0 };
+  for (const p of products) totals[p.asset] += p.price;
+  const sum = totals.Forex + totals.Emas + totals.Kripto;
+  return (Object.keys(totals) as AssetClass[]).map((name) => ({
+    name,
+    value: Math.round((totals[name] / sum) * 100),
+    color: colors[name],
+  }));
+})();
+
+// Active EA packages held by the user — shown as "Paket EA Aktif" on the Dashboard.
+export type Position = {
+  id: string;
+  product: EaProduct;
+  modal: number;
+  daysActive: number;
+};
+
+export const positions: Position[] = [
+  { id: "pos-1", product: products[0], modal: products[0].price, daysActive: 12 },
+  { id: "pos-2", product: products[3], modal: products[3].price, daysActive: 5 },
+  { id: "pos-3", product: products[6], modal: products[6].price, daysActive: 1 },
+];
+
+// Wallet transaction history.
+export type WalletTx = {
+  id: string;
+  type: "Deposit" | "Penarikan" | "Bonus" | "Profit EA";
+  amount: number;
+  status: "Selesai" | "Diproses" | "Ditolak";
+  date: string;
+};
+
+export const transactions: WalletTx[] = [
+  { id: "TX-10248", type: "Profit EA", amount: 39_475, status: "Selesai", date: "11 Sep 2026" },
+  { id: "TX-10231", type: "Deposit", amount: 500_000, status: "Selesai", date: "09 Sep 2026" },
+  { id: "TX-10219", type: "Penarikan", amount: 850_000, status: "Selesai", date: "06 Sep 2026" },
+  { id: "TX-10202", type: "Bonus", amount: 100_000, status: "Selesai", date: "03 Sep 2026" },
+  { id: "TX-10188", type: "Profit EA", amount: 20_118, status: "Selesai", date: "01 Sep 2026" },
+  { id: "TX-10170", type: "Penarikan", amount: 300_000, status: "Diproses", date: "29 Agu 2026" },
+  { id: "TX-10155", type: "Deposit", amount: 1_000_000, status: "Selesai", date: "24 Agu 2026" },
+];
+
 export function formatIdr(value: number): string {
   return "Rp " + new Intl.NumberFormat("id-ID").format(Math.round(value));
 }
