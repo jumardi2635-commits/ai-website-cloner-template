@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Lock, Phone } from "lucide-react";
 import { SlideVerify } from "@/components/slide-verify";
 
 export function LoginForm() {
+  const router = useRouter();
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -17,8 +19,8 @@ export function LoginForm() {
       setMessage("Selesaikan verifikasi keamanan terlebih dahulu.");
       return;
     }
-    // Demo-only clone: credentials are never sent anywhere.
-    setMessage("Ini adalah tampilan demo. Formulir tidak terhubung ke server.");
+    // Demo-only clone: credentials are never sent anywhere; go straight to the demo dashboard.
+    router.push("/dashboard");
   }
 
   return (
