@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  // Next.js 16.3 Turbopack has a regression where `standalone` output fails
-  // to emit `next-server.js.nft.json` when a platform adapter (e.g. Vercel)
-  // is detected. Only use standalone output for self-hosted/Docker builds.
+  // Use standalone output only for self-hosted or Docker-style deployments.
+  // Vercel handles the platform adapter automatically and does not require it.
   output: process.env.VERCEL ? undefined : "standalone",
 };
 
